@@ -8,15 +8,15 @@ public class Test {
 
     public static void main(String[] args) throws IOException {
 
-        File test_file = new File("supermarket_dataset_5.csv");
+        File test_file = new File("supermarket_dataset_50K.csv");
 
         BufferedReader br = new BufferedReader(new FileReader(test_file));
         Scanner scan = new Scanner(System.in);
 
-        HashTable<String,String> Customer_History= new HashTable<>(5); //change for another file
+        HashTable<String,String> Customer_History= new HashTable<>(50000); //change for another file
 
         String line;
-        int counter = 0;
+        // int counter = 0;
 
         while ((line = br.readLine()) != null) {
             if (line == "Customer ID,Customer Name,Date,Product Name"){
@@ -34,8 +34,8 @@ public class Test {
             new_customer.addPurchase(purchase_date, product_name);
 
             Customer_History.put(customer_id,new_customer,purchase_date,product_name);
-            counter++;
-            System.out.println(counter + " purchase added"); //test
+            // counter++;
+            // System.out.println(counter + " purchase added"); //test
         }
         br.close();
 

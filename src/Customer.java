@@ -24,7 +24,17 @@ public class Customer {
     }
 
     public void addPurchase(String date, String productName) {
-        purchases.add(new Purchase(date, productName));
+        int index = 0;
+
+        for (int i = 0; i < purchases.size(); i++){
+            if (date.compareTo(purchases.get(i).getDate()) >= 0){
+                index = i;
+                break;
+            }
+            else 
+                index = i+1;
+        }
+        purchases.add(index,new Purchase(date, productName));
     }
 }
 

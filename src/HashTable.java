@@ -55,7 +55,7 @@ public class HashTable<K,V>{
         boolean found = false;
 
         while(!found && (hashtable[index] != null)){
-            if (key.equals(hashtable[index].getKey())){
+            if (!hashtable[index].isRemoved() && key.equals(hashtable[index].getKey())){
                 found = true;
             }
             else
@@ -124,7 +124,7 @@ public class HashTable<K,V>{
     }
 
     private void enlargeHashTable(){
-        System.out.println("------------" + numberOfEntries/hashtable.length);
+        System.out.println("------------" + Double.valueOf(numberOfEntries)/Double.valueOf(hashtable.length));
         HashEntry<String,Customer>[] oldtable = hashtable;
         int oldsize = hashtable.length;
         int newsize = oldsize*2;
