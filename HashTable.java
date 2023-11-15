@@ -15,13 +15,12 @@ public class HashTable {
     public void put(String customerId, String customerName, String date, String productName) {
         int index = simpleHashFunction(customerId);
 
-        if (table[index] == null) {
-            table[index] = new ArrayList<>();
+        while (table[index] != null) {
+            index++;
         }
-
+        table[index] = new ArrayList<>();
         Customer customer = new Customer(customerId, customerName);
         customer.addPurchase(date, productName);
-
         table[index].add(customer);
         size++;
 
