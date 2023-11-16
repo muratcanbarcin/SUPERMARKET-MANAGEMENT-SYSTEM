@@ -137,7 +137,6 @@ public class HashTable<K,V>{
         for (int index = 0; index < oldsize; index++){
             if ((oldtable[index] != null)){
                 put(oldtable[index].getKey(),oldtable[index].getValue(),"","");
-                numberOfEntries++;
             }
         }
     }
