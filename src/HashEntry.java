@@ -23,7 +23,10 @@ public class HashEntry<K,V>{
             value = new_value;
     }
     public boolean isRemoved(){
-            return (state == States.REMOVED);
+            return (state.equals(States.REMOVED));
+    }
+    public boolean isCurrrent(){
+            return (state.equals(States.CURRENT));
     }
 
     public void setToRemoved(){

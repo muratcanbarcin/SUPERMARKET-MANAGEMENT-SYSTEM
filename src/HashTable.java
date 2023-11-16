@@ -1,19 +1,17 @@
 public class HashTable<K,V>{
     private int numberOfEntries;
     private HashEntry<String,Customer>[] hashtable;
-    private boolean initialized = false;
-    private static final double MAX_LOAD_FACTOR = 0.5;
+    private static final double MAX_LOAD_FACTOR = 0.75;
 
     public HashTable(int initial_capacity){
         numberOfEntries = 0;
-
+        initial_capacity = getNextPrime(initial_capacity);
         @SuppressWarnings("unchecked")
         HashEntry<String,Customer>[] temp = (HashEntry<String,Customer>[])new HashEntry[initial_capacity];
         hashtable = temp;
-        initialized=true;
     }
 
-    public int getHashIndex(String key) {  //gets hash index by SSF
+    public int getHashIndex_SSF(String key) {  //gets hash index by SSF
         int hash = 0;
 
         String[] temp_key = key.replace("-", "").split("");
@@ -25,10 +23,27 @@ public class HashTable<K,V>{
         return hash%hashtable.length;
     }
 
+    public int getHashIndex_PAF(String key){
+        int hash = 0;
+
+        String[] temp_key = key.replace("-", "").split("");
+
+        int power = temp_key.length -1;
+
+        int z = 31; //constant
+
+        for (int i = 0; i < temp_key.length; i++){
+            char next_char = temp_key[i].charAt(0);
+            hash += Math.pow(z, power) * next_char;
+            power--;
+        }
+        return hash%hashtable.length;
+    }
+
     public Customer getValue(String key){
         Customer result = null;
 
-        int index = getHashIndex(key);
+        int index = getHashIndex_PAF(key);
         index = locate(index,key);
 
         if (index != -1){
@@ -40,7 +55,7 @@ public class HashTable<K,V>{
     public String remove(String key){
         String removedValue = null;
 
-        int index = getHashIndex(key);
+        int index = getHashIndex_PAF(key);
         index = locate(index,key);
 
         if (index != -1){
@@ -55,7 +70,7 @@ public class HashTable<K,V>{
         boolean found = false;
 
         while(!found && (hashtable[index] != null)){
-            if (!hashtable[index].isRemoved() && key.equals(hashtable[index].getKey())){
+            if (hashtable[index].isCurrrent() && key.equals(hashtable[index].getKey())){
                 found = true;
             }
             else
@@ -68,19 +83,23 @@ public class HashTable<K,V>{
         return result;
     }
 
-    public Customer put(String key,Customer value,String purchase_date,String product_name){
+    public Customer put(String key,Customer value){
         if ((key==null) || (value==null))
             throw new IllegalArgumentException("Cannot add null to a dictionary.");
         
         else {
             Customer oldValue;
-            int index = getHashIndex(key);
+            int index = getHashIndex_PAF(key);
             index = probe(index,key);
 
             assert (index >= 0) && (index < hashtable.length);
 
-            if ((hashtable[index] == null) || hashtable[index].isRemoved() ){
-                hashtable[index] = new HashEntry<>(key, value);
+            String purchase_date = value.getPurchases().get(0).getDate();
+            String product_name = value.getPurchases().get(0).getProductName();
+
+            if ((hashtable[index] == null) || (hashtable[index].isRemoved()) ){ 
+                value.addPurchase(purchase_date, product_name);
+                hashtable[index] = new HashEntry<String,Customer>(key, value);
                 numberOfEntries++;
                 oldValue = null;
             }
@@ -90,7 +109,8 @@ public class HashTable<K,V>{
                 hashtable[index].setValue(oldValue);
             }
 
-            if (isHashTableTooFull()) enlargeHashTable();
+            if (isHashTableTooFull()) 
+                enlargeHashTable();
 
             return oldValue;
         }
@@ -101,7 +121,7 @@ public class HashTable<K,V>{
         int removedStateIndex = -1;
 
         while( !found && (hashtable[index] != null)){
-            if (!hashtable[index].isRemoved()){
+            if (hashtable[index].isCurrrent()){
                 if (key.equals(hashtable[index].getKey())){
                     found = true;
                 }
@@ -124,25 +144,65 @@ public class HashTable<K,V>{
     }
 
     private void enlargeHashTable(){
-        System.out.println("------------" + Double.valueOf(numberOfEntries)/Double.valueOf(hashtable.length));
+        // System.out.println("------------" + Double.valueOf(numberOfEntries)/Double.valueOf(hashtable.length));
+        // System.out.println("\n\n\n\n\n\n");
+        
         HashEntry<String,Customer>[] oldtable = hashtable;
         int oldsize = hashtable.length;
-        int newsize = oldsize*2;
+        int newsize = getNextPrime(oldsize*2);
 
         @SuppressWarnings("unchecked")
         HashEntry<String,Customer>[] temp = (HashEntry<String,Customer>[])new HashEntry[newsize];
+
         hashtable = temp;
-        numberOfEntries = 0;
+
+        numberOfEntries=0;
 
         for (int index = 0; index < oldsize; index++){
-            if ((oldtable[index] != null)){
-                put(oldtable[index].getKey(),oldtable[index].getValue(),"","");
-                numberOfEntries++;
+            if ((oldtable[index] != null) && oldtable[index].isCurrrent()){
+                put(oldtable[index].getKey(),oldtable[index].getValue());
             }
         }
     }
 
     private boolean isHashTableTooFull(){
-        return ((Double.valueOf(numberOfEntries )/ Double.valueOf(hashtable.length) )== MAX_LOAD_FACTOR);
+        return ((Double.valueOf(numberOfEntries )/ Double.valueOf(hashtable.length) )>= MAX_LOAD_FACTOR);
+    }
+
+    public int getentries(){ //for test
+        return numberOfEntries;
+    }
+
+    public double getload(){ //for test
+        return (Double.valueOf(numberOfEntries )/ Double.valueOf(hashtable.length));
+    }
+
+    public int getNextPrime(int num){
+        int nextprime = -1;
+
+        while (true){
+            if (isPrime(num)){
+                nextprime = num;
+                break;
+            }
+            else 
+                num+=1;
+        }
+
+        return nextprime;
+    }
+
+    public static  boolean isPrime(int num)
+    {
+        if(num<=1)
+        {
+            return false;
+        }
+       for(int i=2;i<=num/2;i++)
+       {
+           if((num%i)==0)
+               return  false;
+       }
+       return true;
     }
 }

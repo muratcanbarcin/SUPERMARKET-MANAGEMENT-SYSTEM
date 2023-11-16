@@ -1,5 +1,6 @@
 import java.io.*;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
 import java.util.StringTokenizer;
 
@@ -13,16 +14,16 @@ public class Test {
         BufferedReader br = new BufferedReader(new FileReader(test_file));
         Scanner scan = new Scanner(System.in);
 
-        HashTable<String,String> Customer_History= new HashTable<>(50000); //change for another file
+        HashTable<String,String> Customer_History= new HashTable<>(16); //change for another file
 
         String line;
-        // int counter = 0;
+        int counter = 0;
 
         while ((line = br.readLine()) != null) {
-            if (line == "Customer ID,Customer Name,Date,Product Name"){
+            if (line.equals("Customer ID,Customer Name,Date,Product Name")){
                 continue;
             }
-
+            
             StringTokenizer tokenizer = new StringTokenizer(line, ","); //scanning text files and tokenizizng lines 
             
             String customer_id = tokenizer.nextToken();
@@ -30,14 +31,23 @@ public class Test {
             String purchase_date = tokenizer.nextToken();
             String product_name = tokenizer.nextToken();
 
+            // Customer new_customer = new Customer(split(line, ',')[0], split(line, ',')[1]);
+            // new_customer.addPurchase(split(line, ',')[2], split(line, ',')[3]);
+
+            // Customer_History.put(split(line, ',')[0],new_customer,split(line, ',')[2],split(line, ',')[3]);
+
             Customer new_customer = new Customer(customer_id, customer_name);
             new_customer.addPurchase(purchase_date, product_name);
 
-            Customer_History.put(customer_id,new_customer,purchase_date,product_name);
-            // counter++;
-            // System.out.println(counter + " purchase added"); //test
+            Customer_History.put(customer_id,new_customer);
+
+            counter++;
+            System.out.println(counter + " purchase added" + "load faact: " + Customer_History.getload() + "Entries: " + Customer_History.getentries()); //test
         }
         br.close();
+
+
+        
 
         boolean customer_search = true;
 
@@ -61,5 +71,26 @@ public class Test {
                 customer_search = false;
             }
         }
+    }
+    public static String[] split(final String line, final char delimiter)
+    {
+        CharSequence[] temp = new CharSequence[(line.length() / 2) + 1];
+        int wordCount = 0;
+        int i = 0;
+        int j = line.indexOf(delimiter, 0); // first substring
+
+        while (j >= 0)
+        {
+            temp[wordCount++] = line.substring(i, j);
+            i = j + 1;
+            j = line.indexOf(delimiter, i); // rest of substrings
+        }
+
+        temp[wordCount++] = line.substring(i); // last substring
+
+        String[] result = new String[wordCount];
+        System.arraycopy(temp, 0, result, 0, wordCount);
+
+        return result;
     }
 }
