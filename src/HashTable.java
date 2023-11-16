@@ -1,3 +1,5 @@
+package src;
+
 public class HashTable<K,V>{
     private int numberOfEntries;
     private HashEntry<String,Customer>[] hashtable;
@@ -13,7 +15,7 @@ public class HashTable<K,V>{
         initialized=true;
     }
 
-    public int getHashIndex(String key) {  //gets hash index by SSF
+    public int getHashIndexSSF(String key) {  //gets hash index by SSF
         int hash = 0;
 
         String[] temp_key = key.replace("-", "").split("");
@@ -25,10 +27,22 @@ public class HashTable<K,V>{
         return hash%hashtable.length;
     }
 
+    public int getHashIndexPAF(String key){
+
+        String[] temp_key = key.replace("-", "").split("");
+        int hash = (temp_key[0].charAt(0) * hashtable.length);
+        for (int i = 0; i < temp_key.length; i++){
+            char next_char = temp_key[i].charAt(0);
+            hash = (hash + next_char) * hashtable.length;
+
+        }
+        return hash;
+    }
+
     public Customer getValue(String key){
         Customer result = null;
 
-        int index = getHashIndex(key);
+        int index = getHashIndexSSF(key);
         index = locate(index,key);
 
         if (index != -1){
@@ -40,7 +54,7 @@ public class HashTable<K,V>{
     public String remove(String key){
         String removedValue = null;
 
-        int index = getHashIndex(key);
+        int index = getHashIndexSSF(key);
         index = locate(index,key);
 
         if (index != -1){
@@ -74,7 +88,7 @@ public class HashTable<K,V>{
         
         else {
             Customer oldValue;
-            int index = getHashIndex(key);
+            int index = getHashIndexSSF(key);
             index = probe(index,key);
 
             assert (index >= 0) && (index < hashtable.length);

@@ -1,3 +1,5 @@
+package src;
+
 public class Purchase {
     private String date;
     private String productName;

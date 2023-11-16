@@ -1,3 +1,5 @@
+package src;
+
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Scanner;
@@ -7,8 +9,9 @@ import java.util.StringTokenizer;
 public class Test {
 
     public static void main(String[] args) throws IOException {
+        int counter =0;
 
-        File test_file = new File("supermarket_dataset_50K.csv");
+        File test_file = new File("src\\supermarket_dataset_50K.csv");
 
         BufferedReader br = new BufferedReader(new FileReader(test_file));
         Scanner scan = new Scanner(System.in);
@@ -34,8 +37,8 @@ public class Test {
             new_customer.addPurchase(purchase_date, product_name);
 
             Customer_History.put(customer_id,new_customer,purchase_date,product_name);
-            // counter++;
-            // System.out.println(counter + " purchase added"); //test
+            counter++;
+            System.out.println(counter + " purchase added"); //test
         }
         br.close();
 
