@@ -11,12 +11,13 @@ public class Test {
     public static void main(String[] args) throws IOException {
         int counter =0;
 
-        File test_file = new File("src\\supermarket_dataset_50K.csv");
+        File test_file = new File("src\\supermarket_dataset_5.csv");
 
         BufferedReader br = new BufferedReader(new FileReader(test_file));
         Scanner scan = new Scanner(System.in);
-
-        HashTable<String,String> Customer_History= new HashTable<>(50000); //change for another file
+        System.out.println("\nShould your hashing be done using Simple Summation Function (SSF) or Polynomial Accumulation Function (PAF)? \n(SSF: 1, PAF:2): ");
+        String SSForPAF = scan.next();
+        HashTable<String,String> Customer_History= new HashTable<>(50000,SSForPAF); //change for another file
 
         String line;
         // int counter = 0;

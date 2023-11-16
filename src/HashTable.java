@@ -4,15 +4,18 @@ public class HashTable<K,V>{
     private int numberOfEntries;
     private HashEntry<String,Customer>[] hashtable;
     private boolean initialized = false;
+
+    private static String  SSForPAF;
     private static final double MAX_LOAD_FACTOR = 0.5;
 
-    public HashTable(int initial_capacity){
+    public HashTable(int initial_capacity,String SSFForPAF){
         numberOfEntries = 0;
 
         @SuppressWarnings("unchecked")
         HashEntry<String,Customer>[] temp = (HashEntry<String,Customer>[])new HashEntry[initial_capacity];
         hashtable = temp;
         initialized=true;
+        this.SSForPAF = SSFForPAF;
     }
 
     public int getHashIndexSSF(String key) {  //gets hash index by SSF
@@ -27,23 +30,31 @@ public class HashTable<K,V>{
         return hash%hashtable.length;
     }
 
-    public int getHashIndexPAF(String key){
+    public int getHashIndexPAF(String key){ //gets hash index by PAF
 
+        int hash =0;
+        double tempHash=0;
         String[] temp_key = key.replace("-", "").split("");
-        int hash = (temp_key[0].charAt(0) * hashtable.length);
+        int z = 33;
         for (int i = 0; i < temp_key.length; i++){
             char next_char = temp_key[i].charAt(0);
-            hash = (hash + next_char) * hashtable.length;
-
+            tempHash += next_char * Math.pow(z,temp_key.length-(1+i));
+            hash = ((int) tempHash)%hashtable.length;
         }
-        return hash;
+        return hash%hashtable.length;
     }
 
     public Customer getValue(String key){
         Customer result = null;
-
-        int index = getHashIndexSSF(key);
-        index = locate(index,key);
+        int index;
+        if(SSForPAF.equalsIgnoreCase("1")){
+            index = getHashIndexSSF(key);
+            index = locate(index,key);
+        }
+        else {
+            index = getHashIndexPAF(key);
+            index = locate(index,key);
+        }
 
         if (index != -1){
             result = hashtable[index].getValue();
@@ -53,9 +64,16 @@ public class HashTable<K,V>{
 
     public String remove(String key){
         String removedValue = null;
+        int index;
+        if(SSForPAF.equalsIgnoreCase("1")){
+            index = getHashIndexSSF(key);
+            index = locate(index,key);
+        }
+        else {
+            index = getHashIndexPAF(key);
+            index = locate(index,key);
+        }
 
-        int index = getHashIndexSSF(key);
-        index = locate(index,key);
 
         if (index != -1){
             removedValue = hashtable[index].getValue().getCustomerName();
@@ -88,8 +106,15 @@ public class HashTable<K,V>{
         
         else {
             Customer oldValue;
-            int index = getHashIndexSSF(key);
-            index = probe(index,key);
+            int index;
+            if(SSForPAF.equalsIgnoreCase("1")){
+                index = getHashIndexSSF(key);
+                index = probe(index,key);
+            }
+            else {
+                index = getHashIndexPAF(key);
+                index = probe(index,key);
+            }
 
             assert (index >= 0) && (index < hashtable.length);
 
