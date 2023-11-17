@@ -17,10 +17,9 @@ public class Test {
         Scanner scan = new Scanner(System.in);
         System.out.println("\nShould your hashing be done using Simple Summation Function (SSF) or Polynomial Accumulation Function (PAF)? \n(SSF: 1, PAF:2): ");
         String SSForPAF = scan.next();
-        HashTable<String,String> Customer_History= new HashTable<>(50000,SSForPAF); //change for another file
+        HashTableLP<String,String> Customer_History= new HashTableLP<>(50000,SSForPAF); //change for another file
 
         String line;
-        // int counter = 0;
 
         while ((line = br.readLine()) != null) {
             if (line == "Customer ID,Customer Name,Date,Product Name"){

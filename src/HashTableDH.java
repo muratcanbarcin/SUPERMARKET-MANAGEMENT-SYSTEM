@@ -1,0 +1,180 @@
+package src;
+
+public class HashTableDH<K,V>{
+    private int numberOfEntries;
+    private HashEntry<String,Customer>[] hashtable;
+    private boolean initialized = false;
+
+    private static String  SSForPAF;
+    private static final double MAX_LOAD_FACTOR = 0.5;
+
+    public HashTableDH(int initial_capacity, String SSFForPAF){
+        numberOfEntries = 0;
+
+        @SuppressWarnings("unchecked")
+        HashEntry<String,Customer>[] temp = (HashEntry<String,Customer>[])new HashEntry[initial_capacity];
+        hashtable = temp;
+        initialized=true;
+        this.SSForPAF = SSFForPAF;
+    }
+
+    public int getHashIndexSSF(String key) {  //gets hash index by SSF
+        int hash = 0;
+
+        String[] temp_key = key.replace("-", "").split("");
+
+        for (int i = 0; i < temp_key.length; i++){
+            char next_char = temp_key[i].charAt(0);
+            hash += next_char;
+        }
+        return hash%hashtable.length;
+    }
+
+    public int getHashIndexPAF(String key){ //gets hash index by PAF
+
+        int hash =0;
+        double tempHash=0;
+        String[] temp_key = key.replace("-", "").split("");
+        int z = 33;
+        for (int i = 0; i < temp_key.length; i++){
+            char next_char = temp_key[i].charAt(0);
+            tempHash += next_char * Math.pow(z,temp_key.length-(1+i));
+            hash = ((int) tempHash)%hashtable.length;
+        }
+        return hash%hashtable.length;
+    }
+
+    public Customer getValue(String key){
+        Customer result = null;
+        int index;
+        if(SSForPAF.equalsIgnoreCase("1")){
+            index = getHashIndexSSF(key);
+            index = locate(index,key);
+        }
+        else {
+            index = getHashIndexPAF(key);
+            index = locate(index,key);
+        }
+
+        if (index != -1){
+            result = hashtable[index].getValue();
+        }
+        return result;
+    }
+
+    public String remove(String key){
+        String removedValue = null;
+        int index;
+        if(SSForPAF.equalsIgnoreCase("1")){
+            index = getHashIndexSSF(key);
+            index = locate(index,key);
+        }
+        else {
+            index = getHashIndexPAF(key);
+            index = locate(index,key);
+        }
+
+
+        if (index != -1){
+            removedValue = hashtable[index].getValue().getCustomerName();
+            hashtable[index].setToRemoved();
+            numberOfEntries--;
+        }
+        return removedValue;
+    }
+
+    private int locate(int index,String key){
+        boolean found = false;
+
+        while(!found && (hashtable[index] != null)){
+            if (!hashtable[index].isRemoved() && key.equals(hashtable[index].getKey())){
+                found = true;
+            }
+            else
+                index = (index+1) % hashtable.length;
+        }
+        int result = -1;
+        if (found){
+            result = index;
+        }
+        return result;
+    }
+
+    private int doubleHash(int index, String key) {
+        int q = 7;
+        int k = 31;
+        int i = 0;
+
+        int dK = q - (index % q);
+        int h2 = (index + k * dK) % hashtable.length;
+
+        return h2;
+    }
+
+    private int probe(int index, String key) {
+        while (hashtable[index] != null && !hashtable[index].isRemoved()) {
+            if (key.equals(hashtable[index].getKey())) {
+                return index; // Key already exists at this index
+            }
+            index = (index + doubleHash(index, key)) % hashtable.length;
+        }
+
+        return index; // Return the index where the key can be inserted
+    }
+
+    public Customer put(String key,Customer value,String purchase_date,String product_name){
+        if ((key==null) || (value==null))
+            throw new IllegalArgumentException("Cannot add null to a dictionary.");
+
+        else {
+            Customer oldValue;
+            int index;
+            if(SSForPAF.equalsIgnoreCase("1")){
+                index = getHashIndexSSF(key);
+                index = probe(index,key);
+            }
+            else {
+                index = getHashIndexPAF(key);
+                index = probe(index,key);
+            }
+
+            assert (index >= 0) && (index < hashtable.length);
+
+            if ((hashtable[index] == null) || hashtable[index].isRemoved() ){
+                hashtable[index] = new HashEntry<>(key, value);
+                numberOfEntries++;
+                oldValue = null;
+            }
+            else{
+                oldValue = hashtable[index].getValue();
+                oldValue.addPurchase(purchase_date, product_name);
+                hashtable[index].setValue(oldValue);
+            }
+
+            if (isHashTableTooFull()) resize();
+
+            return oldValue;
+        }
+    }
+    private void resize(){
+        System.out.println("------------" + Double.valueOf(numberOfEntries)/Double.valueOf(hashtable.length));
+        HashEntry<String,Customer>[] oldtable = hashtable;
+        int oldsize = hashtable.length;
+        int newsize = oldsize*2;
+
+        @SuppressWarnings("unchecked")
+        HashEntry<String,Customer>[] temp = (HashEntry<String,Customer>[])new HashEntry[newsize];
+        hashtable = temp;
+        numberOfEntries = 0;
+
+        for (int index = 0; index < oldsize; index++){
+            if ((oldtable[index] != null)){
+                put(oldtable[index].getKey(),oldtable[index].getValue(),"","");
+            }
+        }
+    }
+
+    private boolean isHashTableTooFull(){
+        return ((Double.valueOf(numberOfEntries )/ Double.valueOf(hashtable.length) )== MAX_LOAD_FACTOR);
+    }
+}

@@ -1,6 +1,6 @@
 package src;
 
-public class HashTable<K,V>{
+public class HashTableLP<K,V>{
     private int numberOfEntries;
     private HashEntry<String,Customer>[] hashtable;
     private boolean initialized = false;
@@ -8,7 +8,7 @@ public class HashTable<K,V>{
     private static String  SSForPAF;
     private static final double MAX_LOAD_FACTOR = 0.5;
 
-    public HashTable(int initial_capacity,String SSFForPAF){
+    public HashTableLP(int initial_capacity, String SSFForPAF){
         numberOfEntries = 0;
 
         @SuppressWarnings("unchecked")
@@ -129,7 +129,7 @@ public class HashTable<K,V>{
                 hashtable[index].setValue(oldValue);
             }
 
-            if (isHashTableTooFull()) enlargeHashTable();
+            if (isHashTableTooFull()) resize();
 
             return oldValue;
         }
@@ -162,7 +162,7 @@ public class HashTable<K,V>{
             return removedStateIndex;
     }
 
-    private void enlargeHashTable(){
+    private void resize(){
         System.out.println("------------" + Double.valueOf(numberOfEntries)/Double.valueOf(hashtable.length));
         HashEntry<String,Customer>[] oldtable = hashtable;
         int oldsize = hashtable.length;
