@@ -1,20 +1,23 @@
 package src;
 
+import java.time.Duration;
+import java.time.Instant;
+
 public class HashTableLP<K,V>{
     private int numberOfEntries;
     private HashEntry<String,Customer>[] hashtable;
-    private boolean initialized = false;
-
     private static String  SSForPAF;
     private static final double MAX_LOAD_FACTOR = 0.5;
+    //test
+    private static Instant start = Instant.now();
+    public static Duration PROBE_TIME = Duration.between(start, start);
 
     public HashTableLP(int initial_capacity, String SSFForPAF){
         numberOfEntries = 0;
 
         @SuppressWarnings("unchecked")
-        HashEntry<String,Customer>[] temp = (HashEntry<String,Customer>[])new HashEntry[initial_capacity];
+        HashEntry<String,Customer>[] temp = (HashEntry<String,Customer>[])new HashEntry[findNextPrime(initial_capacity)];
         hashtable = temp;
-        initialized=true;
         this.SSForPAF = SSFForPAF;
     }
 
@@ -100,7 +103,7 @@ public class HashTableLP<K,V>{
         return result;
     }
 
-    public Customer put(String key,Customer value,String purchase_date,String product_name){
+    public Customer put(String key,Customer value){
         if ((key==null) || (value==null))
             throw new IllegalArgumentException("Cannot add null to a dictionary.");
         
@@ -125,12 +128,13 @@ public class HashTableLP<K,V>{
             }
             else{
                 oldValue = hashtable[index].getValue();
-                oldValue.addPurchase(purchase_date, product_name);
+                if (oldValue.getPurchases().size() > 0)
+                    oldValue.addPurchase(value.getPurchases().get(0).getDate(), value.getPurchases().get(0).getProductName());
                 hashtable[index].setValue(oldValue);
             }
 
             if (isHashTableTooFull()) resize();
-
+        
             return oldValue;
         }
     }
@@ -139,21 +143,32 @@ public class HashTableLP<K,V>{
         boolean found = false;
         int removedStateIndex = -1;
 
-        while( !found && (hashtable[index] != null)){
+        Instant start = Instant.now();
+
+        while(!found && (hashtable[index] != null)){
             if (!hashtable[index].isRemoved()){
                 if (key.equals(hashtable[index].getKey())){
                     found = true;
                 }
-                else 
-                    index = (index + 1) % hashtable.length;
+                else{
+                    index++;
+                    index = index % hashtable.length;
+                }
             }
             else{
                 if (removedStateIndex == -1){
                     removedStateIndex = index;
                 }
-                index = (index+1) % hashtable.length;
+                index++;
+                index = index % hashtable.length;
             }
         }
+
+        Instant end = Instant.now();
+
+        Duration timeElapsed = Duration.between(start, end);
+
+        PROBE_TIME = PROBE_TIME.plus(timeElapsed); //time elapsed duirng probe function
 
         if (found || (removedStateIndex == -1)){
             return index;
@@ -163,10 +178,10 @@ public class HashTableLP<K,V>{
     }
 
     private void resize(){
-        System.out.println("------------" + Double.valueOf(numberOfEntries)/Double.valueOf(hashtable.length));
+        //System.out.println("------------" + Double.valueOf(numberOfEntries)/Double.valueOf(hashtable.length));
         HashEntry<String,Customer>[] oldtable = hashtable;
         int oldsize = hashtable.length;
-        int newsize = oldsize*2;
+        int newsize = findNextPrime(oldsize*2);
 
         @SuppressWarnings("unchecked")
         HashEntry<String,Customer>[] temp = (HashEntry<String,Customer>[])new HashEntry[newsize];
@@ -175,12 +190,39 @@ public class HashTableLP<K,V>{
 
         for (int index = 0; index < oldsize; index++){
             if ((oldtable[index] != null)){
-                put(oldtable[index].getKey(),oldtable[index].getValue(),"","");
+                put(oldtable[index].getKey(),oldtable[index].getValue());
             }
         }
     }
 
     private boolean isHashTableTooFull(){
-        return ((Double.valueOf(numberOfEntries )/ Double.valueOf(hashtable.length) )== MAX_LOAD_FACTOR);
+        return (((double)(numberOfEntries )/ (double)(hashtable.length) ) > MAX_LOAD_FACTOR);
+    }
+
+    public static int findNextPrime(int n) {
+        if (n < 2) {
+            return 2;
+        }
+
+        int nextNumber = n + 1;
+        while (!isPrime(nextNumber)) {
+            nextNumber++;
+        }
+
+        return nextNumber;
+    }
+
+    public static boolean isPrime(int number) {
+        if (number < 2) {
+            return false;
+        }
+
+        for (int i = 2; i <= Math.sqrt(number); i++) {
+            if (number % i == 0) {
+                return false;
+            }
+        }
+
+        return true;
     }
 }

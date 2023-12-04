@@ -122,7 +122,7 @@ public class HashTableDH<K,V>{
         return index; // Return the index where the key can be inserted
     }
 
-    public Customer put(String key,Customer value,String purchase_date,String product_name){
+    public Customer put(String key,Customer value){
         if ((key==null) || (value==null))
             throw new IllegalArgumentException("Cannot add null to a dictionary.");
 
@@ -147,7 +147,7 @@ public class HashTableDH<K,V>{
             }
             else{
                 oldValue = hashtable[index].getValue();
-                oldValue.addPurchase(purchase_date, product_name);
+                oldValue.addPurchase(value.getPurchases().get(0).getDate(), value.getPurchases().get(0).getProductName());
                 hashtable[index].setValue(oldValue);
             }
 
@@ -156,6 +156,7 @@ public class HashTableDH<K,V>{
             return oldValue;
         }
     }
+
     private void resize(){
         System.out.println("------------" + Double.valueOf(numberOfEntries)/Double.valueOf(hashtable.length));
         HashEntry<String,Customer>[] oldtable = hashtable;
@@ -169,7 +170,7 @@ public class HashTableDH<K,V>{
 
         for (int index = 0; index < oldsize; index++){
             if ((oldtable[index] != null)){
-                put(oldtable[index].getKey(),oldtable[index].getValue(),"","");
+                put(oldtable[index].getKey(),oldtable[index].getValue());
             }
         }
     }
