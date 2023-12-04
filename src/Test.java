@@ -9,7 +9,7 @@ import java.util.StringTokenizer;
 
 public class Test {
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws IOException, InterruptedException {
         Instant start = Instant.now();
 
         int counter =0;
@@ -18,7 +18,7 @@ public class Test {
 
         BufferedReader br = new BufferedReader(new FileReader(test_file));
         Scanner scan = new Scanner(System.in);
-        System.out.println("\nShould your hashing be done using Simple Summation Function (SSF) or Polynomial Accumulation Function (PAF)? \n(SSF: 1, PAF:2): ");
+        System.out.print("\nShould your hashing be done using Simple Summation Function (SSF) or Polynomial Accumulation Function (PAF)? \n(SSF: 1, PAF:2): ");
         String SSForPAF = scan.next();
         HashTableLP<String,String> Customer_History= new HashTableLP<>(500,SSForPAF); //change for other data sets
 
@@ -41,14 +41,19 @@ public class Test {
             
             Customer_History.put(customer_id,new_customer);
 
-            // counter++;
+            counter++;
             // System.out.println(counter + " purchase added"); //test
 
         }
         br.close();
+
         Instant end = Instant.now();
         Duration time_elapsed = Duration.between(start, end);
-        System.out.println("Time taken: "+ time_elapsed.toMillis() +" ms" + "  Probe: " + HashTableLP.PROBE_TIME.toMillis() + " ms");
+
+        System.out.println(String.format("\nLoading customer data from %s completed in %d ms.", test_file, time_elapsed.toMillis()));
+        System.out.println(String.format("Customers: %d \t Purchases: %d",Customer_History.get_numberofcustomers(),counter));
+
+        test_input("customer_1K.txt", Customer_History);
 
 
 
@@ -97,6 +102,45 @@ public class Test {
                 continue;
             else
                 break;
+        }
+    }
+
+    public static void test_input(String uuid_txt, HashTableLP<String,String> Customer_History) throws IOException, InterruptedException{
+        Scanner scan = new Scanner(System.in);
+        System.out.print("\n\nDo you want to start 1K customer id test search Y/N: ");
+        String test_choice = scan.next();
+
+        if (test_choice.toLowerCase().equals("y")){
+
+            BufferedReader br = new BufferedReader(new FileReader(uuid_txt));
+            String line;
+
+            Instant test_start = Instant.now();
+
+            while ((line = br.readLine()) != null) {
+                String input_ID = line;
+
+                if (Customer_History.getValue(input_ID) != null){
+                    ArrayList<Purchase> purchases = Customer_History.getValue(input_ID).getPurchases();
+            
+                    System.out.println("\n\nCustomer Name: " + Customer_History.getValue(input_ID).getCustomerName());
+            
+                    for (int i = 0; i < purchases.size(); i++){
+                        System.out.println(purchases.get(i).getDate() + " " + purchases.get(i).getProductName());
+                    }
+                }
+                else
+                    System.out.println("Invalid Customer!");
+                //Thread.sleep(200); //test icin (odev yuklemesinde sil)
+            }
+            br.close();
+
+            Instant test_end = Instant.now();
+
+            Duration test_time = Duration.between(test_start, test_end);
+
+            System.out.println("\n1K Customer Search (ms): " + test_time.toMillis());
+        
         }
     }
 }

@@ -21,7 +21,7 @@ public class HashTableLP<K,V>{
         this.SSForPAF = SSFForPAF;
     }
 
-    public int getHashIndexSSF(String key) {  //gets hash index by SSF
+    private int getHashIndexSSF(String key) {  //gets hash index by SSF
         int hash = 0;
 
         String[] temp_key = key.replace("-", "").split("");
@@ -33,7 +33,7 @@ public class HashTableLP<K,V>{
         return hash%hashtable.length;
     }
 
-    public int getHashIndexPAF(String key){ //gets hash index by PAF
+    private int getHashIndexPAF(String key){ //gets hash index by PAF
 
         int hash =0;
         double tempHash=0;
@@ -77,7 +77,6 @@ public class HashTableLP<K,V>{
             index = locate(index,key);
         }
 
-
         if (index != -1){
             removedValue = hashtable[index].getValue().getCustomerName();
             hashtable[index].setToRemoved();
@@ -103,7 +102,7 @@ public class HashTableLP<K,V>{
         return result;
     }
 
-    public Customer put(String key,Customer value){
+    public void put(String key,Customer value){
         if ((key==null) || (value==null))
             throw new IllegalArgumentException("Cannot add null to a dictionary.");
         
@@ -134,8 +133,6 @@ public class HashTableLP<K,V>{
             }
 
             if (isHashTableTooFull()) resize();
-        
-            return oldValue;
         }
     }
 
@@ -199,7 +196,7 @@ public class HashTableLP<K,V>{
         return (((double)(numberOfEntries )/ (double)(hashtable.length) ) > MAX_LOAD_FACTOR);
     }
 
-    public static int findNextPrime(int n) {
+    private static int findNextPrime(int n) {
         if (n < 2) {
             return 2;
         }
@@ -212,7 +209,7 @@ public class HashTableLP<K,V>{
         return nextNumber;
     }
 
-    public static boolean isPrime(int number) {
+    private static boolean isPrime(int number) {
         if (number < 2) {
             return false;
         }
@@ -225,4 +222,5 @@ public class HashTableLP<K,V>{
 
         return true;
     }
+    public int get_numberofcustomers(){return numberOfEntries;}
 }
