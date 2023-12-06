@@ -1,27 +1,27 @@
 package src;
 
-public class HashEntry<K,V>{
+public class HashEntry<Key,Value>{
 	
-    private K key;
-    private V value;
+    private Key key;
+    private Value value;
     private States state;
     private enum States {CURRENT,REMOVED}
 
-    HashEntry(K search_key,V data_value) {
+    HashEntry(Key search_key,Value data_value) {
           key=search_key;
           value=data_value;
           state=HashEntry.States.CURRENT;
     }     
 
-    public K getKey() {
+    public Key getKey() {
           return key;
     }
 
-    public V getValue() {
+    public Value getValue() {
             return value;
     }
 
-    public void setValue(V new_value){
+    public void setValue(Value new_value){
             value = new_value;
     }
     public boolean isRemoved(){

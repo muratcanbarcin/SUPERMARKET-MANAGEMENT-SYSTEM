@@ -3,9 +3,9 @@ package src;
 import java.time.Duration;
 import java.time.Instant;
 
-public class HashTableDH<K,V>{
+public class HashTableDH<Key,Value> implements DictionaryInterface<Key,Value>{
     private int numberOfEntries;
-    private HashEntry<String,Customer>[] hashtable;
+    private HashEntry<Key,Value>[] hashtable;
     private static String  SSForPAF;
     private static double MAX_LOAD_FACTOR = 0.5;
     //test
@@ -18,14 +18,14 @@ public class HashTableDH<K,V>{
         numberOfEntries = 0;
         this.MAX_LOAD_FACTOR = MAX_LOAD_FACTOR;
         @SuppressWarnings("unchecked")
-        HashEntry<String,Customer>[] temp = (HashEntry<String,Customer>[])new HashEntry[findNextPrime(initial_capacity)];
+        HashEntry<Key,Value>[] temp = (HashEntry<Key,Value>[])new HashEntry[findNextPrime(initial_capacity)];
         hashtable = temp;
         this.SSForPAF = SSFForPAF;
         COLLISION_COUNT = 0;
     }
 
-    private int getHashIndexSSF(String key) {
-        String[] temp_key = key.replace("-", "").split("");
+    private int getHashIndexSSF(Key key) {
+        String[] temp_key = key.toString().replace("-", "").split("");
    
         long sum;
         int i;
@@ -33,24 +33,13 @@ public class HashTableDH<K,V>{
           //sum += ch[i];
           sum += temp_key[i].charAt(0);
         }
-        return (int)(sum*sum)%hashtable.length; //sum^2 kabul edilir mi emin değilim ama hızlandırıyor
-      }
+        return (int)(sum)%hashtable.length; //sum^2 kabul edilir mi emin değilim ama hızlandırıyor
+    }
 
-    // private int getHashIndexSSF(String s) { //string fold 
-    //     s = s.replaceAll("-", "");
-    //     long sum = 0, mul = 1;
-    //     for (int i = 0; i < s.length(); i++) {
-    //       mul = (i % 4 == 0) ? 1 : mul * 256;
-    //       sum += s.charAt(i) * mul;
-    //     }
-    //     return (int)(Math.abs(sum) % hashtable.length);
-    // }
-
-
-    private int getHashIndexPAF(String key){ //gets hash index by PAF
+    private int getHashIndexPAF(Key key){ //gets hash index by PAF
         double hash =0;
         double tempHash=0;
-        String[] temp_key = key.replace("-", "").split("");
+        String[] temp_key = key.toString().replace("-", "").split("");
         int z = 7;
         for (int i = 0; i < temp_key.length; i++){
             char next_char = temp_key[i].charAt(0);
@@ -61,7 +50,7 @@ public class HashTableDH<K,V>{
         return (int)hash%hashtable.length;
     }
 
-    public Customer getValue(String key){
+    public Customer getValue(Key key){
         Customer result = null;
         int index;
         if(SSForPAF.equalsIgnoreCase("1")){
@@ -74,13 +63,12 @@ public class HashTableDH<K,V>{
         }
 
         if (index != -1){
-            result = hashtable[index].getValue();
+            result = (Customer) hashtable[index].getValue();
         }
         return result;
     }
 
-    public String remove(String key){
-        String removedValue = null;
+    public void remove(Key key){
         int index;
         if(SSForPAF.equalsIgnoreCase("1")){
             index = getHashIndexSSF(key);
@@ -93,14 +81,12 @@ public class HashTableDH<K,V>{
 
 
         if (index != -1){
-            removedValue = hashtable[index].getValue().getCustomerName();
             hashtable[index].setToRemoved();
             numberOfEntries--;
         }
-        return removedValue;
     }
 
-    private int locate(int index,String key){
+    public int locate(int index,Key key){
         boolean found = false;
         int start_index = index;
 
@@ -109,7 +95,7 @@ public class HashTableDH<K,V>{
                 found = true;
             }
             else{
-                index += hash2(start_index, key);
+                index += hash2(start_index);
                 index = index % hashtable.length;
             }                
         }
@@ -120,15 +106,15 @@ public class HashTableDH<K,V>{
         return result;
     }
 
-    private int hash2(int hash1, String key) {
+    private int hash2(int hash1) {
         return 7 - (hash1 % 7);
     }
 
-    private int probe(int index, String key) {
-        int hashed = hash2(index, key);
+    private int probe(int index, Key key) {
+        int hashed = hash2(index);
 
         while (hashtable[index] != null && !hashtable[index].isRemoved()) {
-            if (key.equals(hashtable[index].getKey())) {
+            if (key.toString().equals(hashtable[index].getKey().toString())) {
                 return index; // Key already exists at this index
             }
             index += hashed;
@@ -138,7 +124,7 @@ public class HashTableDH<K,V>{
         return index; // Return the index where the key can be inserted
     }
 
-    public Customer put(String key,Customer value){
+    public void put(Key key,Value value){
         if ((key==null) || (value==null))
             throw new IllegalArgumentException("Cannot add null to a dictionary.");
 
@@ -168,25 +154,23 @@ public class HashTableDH<K,V>{
                 oldValue = null;
             }
             else{
-                oldValue = hashtable[index].getValue();
-                oldValue.addPurchase(value.getPurchases().get(0).getDate(), value.getPurchases().get(0).getProductName());
-                hashtable[index].setValue(oldValue);
+                oldValue = (Customer) hashtable[index].getValue();
+                oldValue.addPurchase(((Customer) value).getPurchases().get(0).getDate(), ((Customer) value).getPurchases().get(0).getProductName());
+                hashtable[index].setValue((Value) oldValue);
             }
 
-            if (isHashTableTooFull()) resize();
-
-            return oldValue;
+            if (isHashTableTooFull()) resize(hashtable.length);
         }
     }
 
-    private void resize(){
+    public void resize(int capacity){
         //System.out.println("------------" + Double.valueOf(numberOfEntries)/Double.valueOf(hashtable.length));
-        HashEntry<String,Customer>[] oldtable = hashtable;
-        int oldsize = hashtable.length;
+        HashEntry<Key,Value>[] oldtable = hashtable;
+        int oldsize = capacity;
         int newsize = findNextPrime(oldsize*2);
 
         @SuppressWarnings("unchecked")
-        HashEntry<String,Customer>[] temp = (HashEntry<String,Customer>[])new HashEntry[newsize];
+        HashEntry<Key,Value>[] temp = (HashEntry<Key,Value>[])new HashEntry[newsize];
         hashtable = temp;
         numberOfEntries = 0;
 

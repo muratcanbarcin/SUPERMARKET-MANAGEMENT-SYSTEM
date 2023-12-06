@@ -3,7 +3,6 @@ package src;
 import java.io.*;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.Scanner;
 import java.util.StringTokenizer;
 
@@ -12,18 +11,19 @@ public class Test {
     private static String SSForPAF ="1";
     private static String LPorDH ="LP";
     private static double MAX_LOAD_FACTOR =0.5;
+    private static HashTableDH<String,Customer> Customer_History;
     public static void main(String[] args) throws IOException, InterruptedException {
         int counter =0;
 
-        // File test_file = new File("test.txt");
-        File test_file = new File("supermarket_dataset_50K.csv");
+        String test_file = "supermarket_dataset_50K.csv";
 
         BufferedReader br = new BufferedReader(new FileReader(test_file));
         Scanner scan = new Scanner(System.in);
         menu();
+
         System.out.println(SSForPAF +  " "+ MAX_LOAD_FACTOR + " "+ LPorDH);
 
-        HashTableDH<String,String> Customer_History= new HashTableDH<>(10,SSForPAF,MAX_LOAD_FACTOR); //change for other data sets
+        Customer_History = new HashTableDH<>(10,SSForPAF,MAX_LOAD_FACTOR); //change for other data sets
 
         String line;
 
@@ -57,10 +57,11 @@ public class Test {
         System.out.println(String.format("\nLoading customer data from %s completed in %d ms.", test_file, time_elapsed.toMillis()));
         System.out.println(String.format("Customers: %d \t Purchases: %d \t Collisions: %d",Customer_History.get_numberofcustomers(),counter,Customer_History.get_collisioncount()));
 
-        // if (test_file.equals("supermarket_dataset_50K.csv")){ //test file only works with 50K customer dataset
-        //     test_input("customer_1K.txt", Customer_History);
-        // }
 
+
+        if (test_file.equals("supermarket_dataset_50K.csv")){ //test file only works with 50K customer dataset
+            test_input("customer_1K.txt");
+        }
 
 
         while(true){ //UI (terminal)
@@ -74,13 +75,7 @@ public class Test {
             if (choice1 == 1){
                 
                 if (Customer_History.getValue(input_ID) != null){
-                    ArrayList<Purchase> purchases = Customer_History.getValue(input_ID).getPurchases();
-            
-                    System.out.println("\n\nCustomer Name: " + Customer_History.getValue(input_ID).getCustomerName());
-            
-                    for (int i = 0; i < purchases.size(); i++){
-                        System.out.println(purchases.get(i).getDate() + " " + purchases.get(i).getProductName());
-                    }
+                    Customer_History.getValue(input_ID).display_purchase();
                 }
                 else {
                     System.out.println("Invalid customer ID.");
@@ -96,7 +91,7 @@ public class Test {
                         System.out.println("Customer data deleted.");
                     }
                     else
-                        System.out.println("Invalid customer ID.");
+                        System.out.println("Customer not found!");
                 }
             }
 
@@ -111,7 +106,7 @@ public class Test {
         }
     }
 
-    public static void test_input(String uuid_txt, HashTableLP<String,String> Customer_History) throws IOException, InterruptedException{
+    public static void test_input(String uuid_txt) throws IOException, InterruptedException{
         Scanner scan = new Scanner(System.in);
         System.out.print("\n\nDo you want to start 1K customer id test search Y/N: ");
         String test_choice = scan.next();
@@ -127,16 +122,10 @@ public class Test {
                 String input_ID = line;
 
                 if (Customer_History.getValue(input_ID) != null){
-                    ArrayList<Purchase> purchases = Customer_History.getValue(input_ID).getPurchases();
-            
-                    System.out.println("\n\nCustomer Name: " + Customer_History.getValue(input_ID).getCustomerName());
-            
-                    for (int i = 0; i < purchases.size(); i++){
-                        System.out.println(purchases.get(i).getDate() + " " + purchases.get(i).getProductName());
-                    }
+                    Customer_History.getValue(input_ID).display_purchase();
                 }
                 else
-                    System.out.println("Invalid Customer!");
+                    System.out.println("Customer not found!");
                 //Thread.sleep(200); //test icin (odev yuklemesinde sil)
             }
             br.close();
@@ -229,6 +218,4 @@ public class Test {
                 System.out.println("Invalid choice. Please enter a valid option.");
         }
     }
-
-
 }

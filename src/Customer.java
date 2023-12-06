@@ -38,6 +38,14 @@ public class Customer {
         }
         purchases.add(index,new Purchase(date, productName));
     }
+
+    public void display_purchase(){
+        System.out.println("\n\nCustomer Name: " + getCustomerName());
+            
+        for (int i = 0; i < purchases.size(); i++){
+            System.out.println(purchases.get(i).getDate() + " " + purchases.get(i).getProductName());
+        }
+    }
 }
 
 
