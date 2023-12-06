@@ -10,7 +10,9 @@ public class HashTableLP<K,V>{
     private static final double MAX_LOAD_FACTOR = 0.5;
     //test
     private static Instant start = Instant.now();
-    public static Duration PROBE_TIME = Duration.between(start, start);
+    public static Duration PROBE_TIME = Duration.between(start, start); //eq 0
+    private static int COLLISION_COUNT;
+    private boolean resized = false;
 
     public HashTableLP(int initial_capacity, String SSFForPAF){
         numberOfEntries = 0;
@@ -19,32 +21,44 @@ public class HashTableLP<K,V>{
         HashEntry<String,Customer>[] temp = (HashEntry<String,Customer>[])new HashEntry[findNextPrime(initial_capacity)];
         hashtable = temp;
         this.SSForPAF = SSFForPAF;
+        COLLISION_COUNT = 0;
     }
 
-    private int getHashIndexSSF(String key) {  //gets hash index by SSF
-        int hash = 0;
-
+    private int getHashIndexSSF(String key) {
         String[] temp_key = key.replace("-", "").split("");
-
-        for (int i = 0; i < temp_key.length; i++){
-            char next_char = temp_key[i].charAt(0);
-            hash += next_char;
+   
+        long sum;
+        int i;
+        for (sum=0, i=0; i < temp_key.length; i++) {
+          //sum += ch[i];
+          sum += temp_key[i].charAt(0);
         }
-        return hash%hashtable.length;
-    }
+        return (int)(sum*sum)%hashtable.length; //sum^2 kabul edilir mi emin değilim ama hızlandırıyor
+      }
+
+    // private int getHashIndexSSF(String s) { //string fold 
+    //     s = s.replaceAll("-", "");
+    //     long sum = 0, mul = 1;
+    //     for (int i = 0; i < s.length(); i++) {
+    //       mul = (i % 4 == 0) ? 1 : mul * 256;
+    //       sum += s.charAt(i) * mul;
+    //     }
+    //     return (int)(Math.abs(sum) % hashtable.length);
+    // }
+
 
     private int getHashIndexPAF(String key){ //gets hash index by PAF
-
-        int hash =0;
+        double hash =0;
         double tempHash=0;
         String[] temp_key = key.replace("-", "").split("");
-        int z = 33;
+        int z = 7;
         for (int i = 0; i < temp_key.length; i++){
             char next_char = temp_key[i].charAt(0);
             tempHash += next_char * Math.pow(z,temp_key.length-(1+i));
-            hash = ((int) tempHash)%hashtable.length;
         }
-        return hash%hashtable.length;
+        hash = (tempHash)%hashtable.length;
+
+        return (int)hash%hashtable.length;
     }
 
     public Customer getValue(String key){
@@ -109,20 +123,29 @@ public class HashTableLP<K,V>{
         else {
             Customer oldValue;
             int index;
+            int start_index = 0;
             if(SSForPAF.equalsIgnoreCase("1")){
                 index = getHashIndexSSF(key);
-                index = probe(index,key);
+                //System.out.println(index);
+                start_index = index;
+                index = probe(index,key,value);
             }
             else {
                 index = getHashIndexPAF(key);
-                index = probe(index,key);
+                //System.out.println(index);
+                start_index = index;
+                index = probe(index,key,value);
             }
+
+            //System.out.println(start_index + "\t" + index);
 
             assert (index >= 0) && (index < hashtable.length);
 
             if ((hashtable[index] == null) || hashtable[index].isRemoved() ){
                 hashtable[index] = new HashEntry<>(key, value);
                 numberOfEntries++;
+                if ((start_index != index) && !resized)
+                    COLLISION_COUNT++;
                 oldValue = null;
             }
             else{
@@ -136,7 +159,7 @@ public class HashTableLP<K,V>{
         }
     }
 
-    private int probe(int index, String key){
+    private int probe(int index, String key, Customer customer){
         boolean found = false;
         int removedStateIndex = -1;
 
@@ -144,7 +167,7 @@ public class HashTableLP<K,V>{
 
         while(!found && (hashtable[index] != null)){
             if (!hashtable[index].isRemoved()){
-                if (key.equals(hashtable[index].getKey())){
+                if (key.equals(hashtable[index].getKey()) && customer.getCustomerName().equals(hashtable[index].getValue().getCustomerName())){
                     found = true;
                 }
                 else{
@@ -175,6 +198,7 @@ public class HashTableLP<K,V>{
     }
 
     private void resize(){
+        resized = true;
         //System.out.println("------------" + Double.valueOf(numberOfEntries)/Double.valueOf(hashtable.length));
         HashEntry<String,Customer>[] oldtable = hashtable;
         int oldsize = hashtable.length;
@@ -223,4 +247,5 @@ public class HashTableLP<K,V>{
         return true;
     }
     public int get_numberofcustomers(){return numberOfEntries;}
+    public int get_collisioncount(){return COLLISION_COUNT;}
 }

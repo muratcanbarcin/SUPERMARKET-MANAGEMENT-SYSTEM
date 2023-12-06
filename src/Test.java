@@ -10,19 +10,20 @@ import java.util.StringTokenizer;
 public class Test {
 
     public static void main(String[] args) throws IOException, InterruptedException {
-        Instant start = Instant.now();
-
         int counter =0;
 
+        // File test_file = new File("test.txt");
         File test_file = new File("supermarket_dataset_50K.csv");
 
         BufferedReader br = new BufferedReader(new FileReader(test_file));
         Scanner scan = new Scanner(System.in);
         System.out.print("\nShould your hashing be done using Simple Summation Function (SSF) or Polynomial Accumulation Function (PAF)? \n(SSF: 1, PAF:2): ");
         String SSForPAF = scan.next();
-        HashTableLP<String,String> Customer_History= new HashTableLP<>(500,SSForPAF); //change for other data sets
+        HashTableDH<String,String> Customer_History= new HashTableDH<>(10,SSForPAF); //change for other data sets
 
         String line;
+
+        Instant start = Instant.now();
 
         while ((line = br.readLine()) != null) {
             if (line.equals("Customer ID,Customer Name,Date,Product Name")){
@@ -42,8 +43,7 @@ public class Test {
             Customer_History.put(customer_id,new_customer);
 
             counter++;
-            // System.out.println(counter + " purchase added"); //test
-
+            //System.out.println(counter + " purchase added"); //test
         }
         br.close();
 
@@ -51,9 +51,11 @@ public class Test {
         Duration time_elapsed = Duration.between(start, end);
 
         System.out.println(String.format("\nLoading customer data from %s completed in %d ms.", test_file, time_elapsed.toMillis()));
-        System.out.println(String.format("Customers: %d \t Purchases: %d",Customer_History.get_numberofcustomers(),counter));
+        System.out.println(String.format("Customers: %d \t Purchases: %d \t Collisions: %d",Customer_History.get_numberofcustomers(),counter,Customer_History.get_collisioncount()));
 
-        test_input("customer_1K.txt", Customer_History);
+        // if (test_file.equals("supermarket_dataset_50K.csv")){ //test file only works with 50K customer dataset
+        //     test_input("customer_1K.txt", Customer_History);
+        // }
 
 
 
