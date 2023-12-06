@@ -9,6 +9,9 @@ import java.util.StringTokenizer;
 
 public class Test {
 
+    private static String SSForPAF ="1";
+    private static String LPorDH ="LP";
+    private static double MAX_LOAD_FACTOR =0.5;
     public static void main(String[] args) throws IOException, InterruptedException {
         int counter =0;
 
@@ -17,9 +20,10 @@ public class Test {
 
         BufferedReader br = new BufferedReader(new FileReader(test_file));
         Scanner scan = new Scanner(System.in);
-        System.out.print("\nShould your hashing be done using Simple Summation Function (SSF) or Polynomial Accumulation Function (PAF)? \n(SSF: 1, PAF:2): ");
-        String SSForPAF = scan.next();
-        HashTableDH<String,String> Customer_History= new HashTableDH<>(10,SSForPAF); //change for other data sets
+        menu();
+        System.out.println(SSForPAF +  " "+ MAX_LOAD_FACTOR + " "+ LPorDH);
+
+        HashTableDH<String,String> Customer_History= new HashTableDH<>(10,SSForPAF,MAX_LOAD_FACTOR); //change for other data sets
 
         String line;
 
@@ -145,4 +149,86 @@ public class Test {
         
         }
     }
+
+    public static void menu() {
+        Scanner scanner = new Scanner(System.in);
+        while (true) {
+            System.out.println("1. Database");
+            System.out.println("2. Settings");
+            System.out.println("3. Exit");
+            System.out.print("Enter your choice: ");
+
+            int choice = scanner.nextInt();
+            scanner.nextLine(); // Consume the newline character
+
+            switch (choice) {
+                case 1:
+                    // Database selected, exit menu
+                    return;
+                case 2:
+                    // Settings selected
+                    settingsMenu(scanner);
+                    break;
+                case 3:
+                    // Exit program
+                    System.exit(0);
+                default:
+                    System.out.println("Invalid choice. Please enter a valid option.");
+            }
+        }
+    }
+
+    public static void settingsMenu(Scanner scanner) {
+
+
+        while (true) {
+            System.out.println("1. Hash Function");
+            System.out.println("2. Max Load Factor");
+            System.out.println("3. Back to main menu");
+            System.out.print("Enter your choice: ");
+
+            int choice = scanner.nextInt();
+            scanner.nextLine(); // Consume the newline character
+
+            switch (choice) {
+                case 1:
+                    // Hash Function selected
+                    hashFunctionMenu(scanner);
+                    break;
+                case 2:
+                    // Max Load Factor selected
+                    System.out.print("Enter Max Load Factor: ");
+                    String temp1= scanner.next();
+                    MAX_LOAD_FACTOR = Double.parseDouble(temp1);
+                    break;
+                case 3:
+                    // Back to main menu
+                    return;
+                default:
+                    System.out.println("Invalid choice. Please enter a valid option.");
+            }
+        }
+    }
+
+    public static void hashFunctionMenu(Scanner scanner) {
+        System.out.println("1. Simple Summation Function (SSF)");
+        System.out.println("2. Polynomial Accumulation Function (PAF)");
+        System.out.print("Enter your choice: ");
+
+        int choice = scanner.nextInt();
+        scanner.nextLine(); // Consume the newline character
+
+        switch (choice) {
+            case 1:
+                SSForPAF = "1";
+                break;
+            case 2:
+                SSForPAF = "2";
+                break;
+            default:
+                System.out.println("Invalid choice. Please enter a valid option.");
+        }
+    }
+
+
 }

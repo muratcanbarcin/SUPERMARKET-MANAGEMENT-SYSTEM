@@ -7,16 +7,16 @@ public class HashTableDH<K,V>{
     private int numberOfEntries;
     private HashEntry<String,Customer>[] hashtable;
     private static String  SSForPAF;
-    private static final double MAX_LOAD_FACTOR = 0.5;
+    private static double MAX_LOAD_FACTOR = 0.5;
     //test
     private static Instant start = Instant.now();
     public static Duration PROBE_TIME = Duration.between(start, start); //eq 0
     private static int COLLISION_COUNT;
     private boolean resized = false;
 
-    public HashTableDH(int initial_capacity, String SSFForPAF){
+    public HashTableDH(int initial_capacity, String SSFForPAF,double MAX_LOAD_FACTOR){
         numberOfEntries = 0;
-
+        this.MAX_LOAD_FACTOR = MAX_LOAD_FACTOR;
         @SuppressWarnings("unchecked")
         HashEntry<String,Customer>[] temp = (HashEntry<String,Customer>[])new HashEntry[findNextPrime(initial_capacity)];
         hashtable = temp;
