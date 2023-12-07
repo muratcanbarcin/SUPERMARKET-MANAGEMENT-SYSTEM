@@ -1,8 +1,5 @@
 package src;
 
-import java.time.Duration;
-import java.time.Instant;
-
 public class HashTableDH<Key, Value> implements DictionaryInterface<Key, Value> {
     // Class variables
     private int numberOfEntries;
