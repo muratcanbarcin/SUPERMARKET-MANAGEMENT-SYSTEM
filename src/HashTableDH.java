@@ -18,7 +18,6 @@ public class HashTableDH<Key, Value> implements DictionaryInterface<Key, Value> 
     public HashTableDH(int initial_capacity, String SSFForPAF, double MAX_LOAD_FACTOR) {
         numberOfEntries = 0;
         this.MAX_LOAD_FACTOR = MAX_LOAD_FACTOR;
-        @SuppressWarnings("unchecked")
         HashEntry<Key, Value>[] temp = (HashEntry<Key, Value>[]) new HashEntry[findNextPrime(initial_capacity)];
         hashtable = temp;
         this.SSForPAF = SSFForPAF;

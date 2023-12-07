@@ -13,8 +13,6 @@ public class HashTableLP<Key, Value> implements DictionaryInterface<Key, Value> 
     public HashTableLP(int initial_capacity, String SSFForPAF, double MAX_LOAD_FACTOR) {
         numberOfEntries = 0;
         this.MAX_LOAD_FACTOR = MAX_LOAD_FACTOR;
-        // Create a new array of hash entries with the next prime capacity
-        @SuppressWarnings("unchecked")
         HashEntry<Key, Value>[] temp = (HashEntry<Key, Value>[]) new HashEntry[findNextPrime(initial_capacity)];
         hashtable = temp;
         this.SSForPAF = SSFForPAF;
