@@ -3,112 +3,116 @@ package src;
 import java.time.Duration;
 import java.time.Instant;
 
-public class HashTableDH<Key,Value> implements DictionaryInterface<Key,Value>{
+public class HashTableDH<Key, Value> implements DictionaryInterface<Key, Value> {
+    // Class variables
     private int numberOfEntries;
-    private HashEntry<Key,Value>[] hashtable;
-    private static String  SSForPAF;
+    private HashEntry<Key, Value>[] hashtable;
+    private static String SSForPAF;
     private static double MAX_LOAD_FACTOR = 0.5;
-    //test
-    private static Instant start = Instant.now();
-    public static Duration PROBE_TIME = Duration.between(start, start); //eq 0
-    private static int COLLISION_COUNT;
 
-    public HashTableDH(int initial_capacity, String SSFForPAF,double MAX_LOAD_FACTOR){
+    // Timing and collision tracking variables
+    private static Instant start = Instant.now();
+    private static long COLLISION_COUNT;
+
+    // Constructor
+    public HashTableDH(int initial_capacity, String SSFForPAF, double MAX_LOAD_FACTOR) {
         numberOfEntries = 0;
         this.MAX_LOAD_FACTOR = MAX_LOAD_FACTOR;
         @SuppressWarnings("unchecked")
-        HashEntry<Key,Value>[] temp = (HashEntry<Key,Value>[])new HashEntry[findNextPrime(initial_capacity)];
+        HashEntry<Key, Value>[] temp = (HashEntry<Key, Value>[]) new HashEntry[findNextPrime(initial_capacity)];
         hashtable = temp;
         this.SSForPAF = SSFForPAF;
         COLLISION_COUNT = 0;
     }
 
+    // Hash function using a simple summation
     private int getHashIndexSSF(Key key) {
         String[] temp_key = key.toString().replace("-", "").split("");
-   
+
         long sum;
         int i;
-        for (sum=0, i=0; i < temp_key.length; i++) {
-          //sum += ch[i];
-          sum += temp_key[i].charAt(0);
+        for (sum = 0, i = 0; i < temp_key.length; i++) {
+            sum += temp_key[i].charAt(0);
         }
-        return (int)(sum)%hashtable.length; //sum^2 kabul edilir mi emin değilim ama hızlandırıyor
+        return (int) (sum) % hashtable.length;
     }
 
-    private int getHashIndexPAF(Key key){ //gets hash index by PAF
-        double hash =0;
-        double tempHash=0;
+    // Hash function using Polynomial Accumulation Function (PAF)
+    private int getHashIndexPAF(Key key) {
+        double hash = 0;
+        double tempHash = 0;
         String[] temp_key = key.toString().replace("-", "").split("");
         int z = 7;
-        for (int i = 0; i < temp_key.length; i++){
+        for (int i = 0; i < temp_key.length; i++) {
             char next_char = temp_key[i].charAt(0);
-            tempHash += next_char * Math.pow(z,temp_key.length-(1+i));
+            tempHash += next_char * Math.pow(z, temp_key.length - (1 + i));
         }
-        hash = (tempHash)%hashtable.length;
+        hash = (tempHash) % hashtable.length;
 
-        return (int)hash%hashtable.length;
+        return (int) hash % hashtable.length;
     }
 
-    public Customer getValue(Key key){
+    // Method to get a customer value associated with a key
+    public Customer getValue(Key key) {
         Customer result = null;
         int index;
-        if(SSForPAF.equalsIgnoreCase("1")){
+        if (SSForPAF.equalsIgnoreCase("1")) {
             index = getHashIndexSSF(key);
-            index = locate(index,key);
-        }
-        else {
+            index = locate(index, key);
+        } else {
             index = getHashIndexPAF(key);
-            index = locate(index,key);
+            index = locate(index, key);
         }
 
-        if (index != -1){
+        if (index != -1) {
             result = (Customer) hashtable[index].getValue();
         }
         return result;
     }
 
-    public void remove(Key key){
+    // Method to remove a key-value pair from the hash table
+    public void remove(Key key) {
         int index;
-        if(SSForPAF.equalsIgnoreCase("1")){
+        if (SSForPAF.equalsIgnoreCase("1")) {
             index = getHashIndexSSF(key);
-            index = locate(index,key);
-        }
-        else {
+            index = locate(index, key);
+        } else {
             index = getHashIndexPAF(key);
-            index = locate(index,key);
+            index = locate(index, key);
         }
 
-
-        if (index != -1){
+        if (index != -1) {
             hashtable[index].setToRemoved();
             numberOfEntries--;
         }
     }
 
-    public int locate(int index,Key key){
+    // Method to locate an index for a given key
+    public int locate(int index, Key key) {
         boolean found = false;
         int start_index = index;
 
-        while(!found && (hashtable[index] != null)){
-            if (!hashtable[index].isRemoved() && key.equals(hashtable[index].getKey())){
+        while (!found && (hashtable[index] != null)) {
+            if (!hashtable[index].isRemoved() && key.equals(hashtable[index].getKey())) {
                 found = true;
-            }
-            else{
+            } else {
                 index += hash2(start_index);
                 index = index % hashtable.length;
-            }                
+            }
         }
         int result = -1;
-        if (found){
+        if (found) {
             result = index;
         }
         return result;
     }
 
+    // Secondary hash function
     private int hash2(int hash1) {
         return 7 - (hash1 % 7);
     }
 
+    // Method to probe and find the appropriate index for a key
     private int probe(int index, Key key) {
         int hashed = hash2(index);
 
@@ -124,31 +128,29 @@ public class HashTableDH<Key,Value> implements DictionaryInterface<Key,Value>{
         return index; // Return the index where the key can be inserted
     }
 
-    public void put(Key key,Value value){
-        if ((key==null) || (value==null))
+    // Method to insert a key-value pair into the hash table
+    public void put(Key key, Value value) {
+        if ((key == null) || (value == null))
             throw new IllegalArgumentException("Cannot add null to a dictionary.");
-
         else {
             Customer oldValue;
             int index;
 
-            if(SSForPAF.equalsIgnoreCase("1")){
+            if (SSForPAF.equalsIgnoreCase("1")) {
                 index = getHashIndexSSF(key);
-                index = probe(index,key);
-            }
-            else {
+                index = probe(index, key);
+            } else {
                 index = getHashIndexPAF(key);
-                index = probe(index,key);
+                index = probe(index, key);
             }
 
             assert (index >= 0) && (index < hashtable.length);
 
-            if ((hashtable[index] == null) || hashtable[index].isRemoved() ){
+            if ((hashtable[index] == null) || hashtable[index].isRemoved()) {
                 hashtable[index] = new HashEntry<>(key, value);
                 numberOfEntries++;
                 oldValue = null;
-            }
-            else{
+            } else {
                 oldValue = (Customer) hashtable[index].getValue();
                 oldValue.addPurchase(((Customer) value).getPurchases().get(0).getDate(), ((Customer) value).getPurchases().get(0).getProductName());
                 hashtable[index].setValue((Value) oldValue);
@@ -158,27 +160,30 @@ public class HashTableDH<Key,Value> implements DictionaryInterface<Key,Value>{
         }
     }
 
-    public void resize(int capacity){
-        HashEntry<Key,Value>[] oldtable = hashtable;
+    // Method to resize the hash table when it becomes too full
+    public void resize(int capacity) {
+        HashEntry<Key, Value>[] oldtable = hashtable;
         int oldsize = capacity;
-        int newsize = findNextPrime(oldsize*2);
+        int newsize = findNextPrime(oldsize * 2);
 
         @SuppressWarnings("unchecked")
-        HashEntry<Key,Value>[] temp = (HashEntry<Key,Value>[])new HashEntry[newsize];
+        HashEntry<Key, Value>[] temp = (HashEntry<Key, Value>[]) new HashEntry[newsize];
         hashtable = temp;
         numberOfEntries = 0;
 
-        for (int index = 0; index < oldsize; index++){
-            if ((oldtable[index] != null)){
-                put(oldtable[index].getKey(),oldtable[index].getValue());
+        for (int index = 0; index < oldsize; index++) {
+            if ((oldtable[index] != null)) {
+                put(oldtable[index].getKey(), oldtable[index].getValue());
             }
         }
     }
 
-    private boolean isHashTableTooFull(){
-        return ((double)numberOfEntries/ (double)hashtable.length > MAX_LOAD_FACTOR);
+    // Method to check if the hash table is too full
+    private boolean isHashTableTooFull() {
+        return ((double) numberOfEntries / (double) hashtable.length > MAX_LOAD_FACTOR);
     }
 
+    // Method to find the next prime number
     private static int findNextPrime(int n) {
         if (n < 2) {
             return 2;
@@ -192,6 +197,7 @@ public class HashTableDH<Key,Value> implements DictionaryInterface<Key,Value>{
         return nextNumber;
     }
 
+    // Method to check if a number is prime
     private static boolean isPrime(int number) {
         if (number < 2) {
             return false;
@@ -205,7 +211,14 @@ public class HashTableDH<Key,Value> implements DictionaryInterface<Key,Value>{
 
         return true;
     }
-    public int get_numberofcustomers(){return numberOfEntries;}
-    public int get_collisioncount(){return COLLISION_COUNT;}
-}
 
+    // Getter method for the number of customers in the hash table
+    public int get_numberofcustomers() {
+        return numberOfEntries;
+    }
+
+    // Getter method for the collision count
+    public long get_collisioncount() {
+        return COLLISION_COUNT;
+    }
+}
