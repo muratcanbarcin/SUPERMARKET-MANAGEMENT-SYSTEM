@@ -12,7 +12,6 @@ public class HashTableDH<Key,Value> implements DictionaryInterface<Key,Value>{
     private static Instant start = Instant.now();
     public static Duration PROBE_TIME = Duration.between(start, start); //eq 0
     private static int COLLISION_COUNT;
-    private boolean resized = false;
 
     public HashTableDH(int initial_capacity, String SSFForPAF,double MAX_LOAD_FACTOR){
         numberOfEntries = 0;
@@ -119,6 +118,7 @@ public class HashTableDH<Key,Value> implements DictionaryInterface<Key,Value>{
             }
             index += hashed;
             index = index % hashtable.length;
+            COLLISION_COUNT++;
         }
 
         return index; // Return the index where the key can be inserted
@@ -131,16 +131,13 @@ public class HashTableDH<Key,Value> implements DictionaryInterface<Key,Value>{
         else {
             Customer oldValue;
             int index;
-            int start_index = 0;
 
             if(SSForPAF.equalsIgnoreCase("1")){
                 index = getHashIndexSSF(key);
-                start_index = index;
                 index = probe(index,key);
             }
             else {
                 index = getHashIndexPAF(key);
-                start_index = index;
                 index = probe(index,key);
             }
 
@@ -149,8 +146,6 @@ public class HashTableDH<Key,Value> implements DictionaryInterface<Key,Value>{
             if ((hashtable[index] == null) || hashtable[index].isRemoved() ){
                 hashtable[index] = new HashEntry<>(key, value);
                 numberOfEntries++;
-                if ((start_index != index) && !resized)
-                    COLLISION_COUNT++;
                 oldValue = null;
             }
             else{
@@ -164,7 +159,6 @@ public class HashTableDH<Key,Value> implements DictionaryInterface<Key,Value>{
     }
 
     public void resize(int capacity){
-        //System.out.println("------------" + Double.valueOf(numberOfEntries)/Double.valueOf(hashtable.length));
         HashEntry<Key,Value>[] oldtable = hashtable;
         int oldsize = capacity;
         int newsize = findNextPrime(oldsize*2);

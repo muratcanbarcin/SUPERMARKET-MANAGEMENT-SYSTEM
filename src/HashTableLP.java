@@ -1,18 +1,12 @@
 package src;
 
-import java.time.Duration;
-import java.time.Instant;
-
 public class HashTableLP<Key,Value> implements DictionaryInterface<Key,Value>{
     private int numberOfEntries;
     private HashEntry<Key,Value>[] hashtable;
     private static String  SSForPAF;
     private static double MAX_LOAD_FACTOR = 0.5;
     //test
-    private static Instant start = Instant.now();
-    public static Duration PROBE_TIME = Duration.between(start, start); //eq 0
     private static int COLLISION_COUNT;
-    private boolean resized = false;
 
     public HashTableLP(int initial_capacity, String SSFForPAF,double MAX_LOAD_FACTOR){
         numberOfEntries = 0;
@@ -109,29 +103,20 @@ public class HashTableLP<Key,Value> implements DictionaryInterface<Key,Value>{
         else {
             Customer oldValue;
             int index;
-            int start_index = 0;
             if(SSForPAF.equalsIgnoreCase("1")){
                 index = getHashIndexSSF(key);
-                //System.out.println(index);
-                start_index = index;
                 index = probe(index,key,value);
             }
             else {
                 index = getHashIndexPAF(key);
-                //System.out.println(index);
-                start_index = index;
                 index = probe(index,key,value);
             }
-
-            //System.out.println(start_index + "\t" + index);
 
             assert (index >= 0) && (index < hashtable.length);
 
             if ((hashtable[index] == null) || hashtable[index].isRemoved() ){
                 hashtable[index] = new HashEntry<>(key, value);
                 numberOfEntries++;
-                if ((start_index != index) && !resized)
-                    COLLISION_COUNT++;
                 oldValue = null;
             }
             else{
@@ -149,8 +134,6 @@ public class HashTableLP<Key,Value> implements DictionaryInterface<Key,Value>{
         boolean found = false;
         int removedStateIndex = -1;
 
-        Instant start = Instant.now();
-
         while(!found && (hashtable[index] != null)){
             if (!hashtable[index].isRemoved()){
                 if (key.toString().equals(hashtable[index].getKey().toString()) && ((Customer) value).getCustomerName().equals(((Customer) hashtable[index].getValue()).getCustomerName())){
@@ -158,6 +141,7 @@ public class HashTableLP<Key,Value> implements DictionaryInterface<Key,Value>{
                 }
                 else{
                     index++;
+                    COLLISION_COUNT++;
                     index = index % hashtable.length;
                 }
             }
@@ -170,12 +154,6 @@ public class HashTableLP<Key,Value> implements DictionaryInterface<Key,Value>{
             }
         }
 
-        Instant end = Instant.now();
-
-        Duration timeElapsed = Duration.between(start, end);
-
-        PROBE_TIME = PROBE_TIME.plus(timeElapsed); //time elapsed duirng probe function
-
         if (found || (removedStateIndex == -1)){
             return index;
         }
@@ -184,8 +162,6 @@ public class HashTableLP<Key,Value> implements DictionaryInterface<Key,Value>{
     }
 
     public void resize(int capacity){
-        resized = true;
-        //System.out.println("------------" + Double.valueOf(numberOfEntries)/Double.valueOf(hashtable.length));
         HashEntry<Key,Value>[] oldtable = hashtable;
         int oldsize = capacity;
         int newsize = findNextPrime(oldsize*2);

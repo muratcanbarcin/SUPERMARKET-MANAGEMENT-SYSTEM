@@ -11,7 +11,7 @@ public class Test {
     private static String SSForPAF ="1";
     private static String LPorDH ="LP";
     private static double MAX_LOAD_FACTOR =0.5;
-    private static HashTableDH<String,Customer> Customer_History;
+    private static HashTableLP<String,Customer> Customer_History;
     public static void main(String[] args) throws IOException, InterruptedException {
         int counter =0;
 
@@ -23,7 +23,7 @@ public class Test {
 
         System.out.println(SSForPAF +  " "+ MAX_LOAD_FACTOR + " "+ LPorDH);
 
-        Customer_History = new HashTableDH<>(10,SSForPAF,MAX_LOAD_FACTOR); //change for other data sets
+        Customer_History = new HashTableLP<>(128,SSForPAF,MAX_LOAD_FACTOR); //change for other data sets
 
         String line;
 
@@ -45,9 +45,6 @@ public class Test {
             new_customer.addPurchase(purchase_date, product_name);
             
             Customer_History.put(customer_id,new_customer);
-
-            counter++;
-            //System.out.println(counter + " purchase added"); //test
         }
         br.close();
 
@@ -56,7 +53,6 @@ public class Test {
 
         System.out.println(String.format("\nLoading customer data from %s completed in %d ms.", test_file, time_elapsed.toMillis()));
         System.out.println(String.format("Customers: %d \t Purchases: %d \t Collisions: %d",Customer_History.get_numberofcustomers(),counter,Customer_History.get_collisioncount()));
-
 
 
         if (test_file.equals("supermarket_dataset_50K.csv")){ //test file only works with 50K customer dataset
@@ -110,32 +106,57 @@ public class Test {
         Scanner scan = new Scanner(System.in);
         System.out.print("\n\nDo you want to start 1K customer id test search Y/N: ");
         String test_choice = scan.next();
+        int customer_count = 0;
 
-        if (test_choice.toLowerCase().equals("y")){
+        if (test_choice.equalsIgnoreCase("y")){
 
             BufferedReader br = new BufferedReader(new FileReader(uuid_txt));
             String line;
 
-            Instant test_start = Instant.now();
+            Instant test_start, test_end;
+            Duration max_duration = Duration.ZERO;
+            Duration min_duration = Duration.ofSeconds(99);
+            Duration total_duration = Duration.ZERO;
 
             while ((line = br.readLine()) != null) {
                 String input_ID = line;
+                Boolean customer_found = false;
+
+                test_start = Instant.now();
 
                 if (Customer_History.getValue(input_ID) != null){
-                    Customer_History.getValue(input_ID).display_purchase();
+                    customer_found = true;
                 }
-                else
+
+                test_end = Instant.now();
+
+                if (customer_found){
+                    Customer_History.getValue(input_ID).display_purchase();
+                    customer_count++;
+                }
+                else{
                     System.out.println("Customer not found!");
-                //Thread.sleep(200); //test icin (odev yuklemesinde sil)
+                }
+
+                Duration test_time = Duration.between(test_start, test_end);
+
+                total_duration = total_duration.plus(test_time);
+
+                if (test_time.compareTo(max_duration) >= 0){
+                    max_duration = test_time;
+                }
+                if (test_time.compareTo(min_duration)<=0){
+                    min_duration = test_time;
+                }
+
             }
             br.close();
 
-            Instant test_end = Instant.now();
+            double average_time = total_duration.getNano() / customer_count;     
 
-            Duration test_time = Duration.between(test_start, test_end);
-
-            System.out.println("\n1K Customer Search (ms): " + test_time.toMillis());
-        
+            System.out.println("\nmax: " + max_duration.toNanos() + " min: " + min_duration.toNanos() 
+                            + " Total Duration: " + total_duration.toNanos() + " Average Time: " + average_time 
+                            + " customers: " + customer_count);
         }
     }
 
