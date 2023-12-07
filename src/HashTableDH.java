@@ -10,8 +10,7 @@ public class HashTableDH<Key, Value> implements DictionaryInterface<Key, Value> 
     private static String SSForPAF;
     private static double MAX_LOAD_FACTOR = 0.5;
 
-    // Timing and collision tracking variables
-    private static Instant start = Instant.now();
+    // Test variable to count collisions
     private static long COLLISION_COUNT;
 
     // Constructor
@@ -173,7 +172,7 @@ public class HashTableDH<Key, Value> implements DictionaryInterface<Key, Value> 
         } catch (Exception e) {
             // Handle other exceptions
             System.err.println("An unexpected error occurred during put operation.");
-            e.printStackTrace(); // You can choose to print or log the exception
+            e.printStackTrace();
         }
     }
 

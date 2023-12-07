@@ -9,7 +9,7 @@ import java.util.StringTokenizer;
 
 public class Test {
 
-    // Constants and variables declaration
+    // Constants and variables
     private static String SSForPAF = "1"; // Default hash function (SSF:1 PAF:2)
     private static double MAX_LOAD_FACTOR = 0.5; // Default max load factor
     private static HashTableLP<String, Customer> Customer_History;
@@ -41,7 +41,6 @@ public class Test {
 
             // File loop
             while ((line = br.readLine()) != null) {
-                // Skip header line
                 if (line.equals("Customer ID,Customer Name,Date,Product Name")) {
                     continue;
                 }
@@ -118,7 +117,10 @@ public class Test {
             }
         } catch (IOException e) {
             e.printStackTrace();
-        } catch (InterruptedException e) {
+        }
+        catch (Exception e) {
+            // Handle other exceptions
+            System.err.println("An unexpected error occurred.");
             e.printStackTrace();
         }
     }
@@ -215,9 +217,8 @@ public class Test {
             System.out.println("Invalid input. Please enter a valid option.");
         }
     }
-
-// Display the settings menu
-public static void settingsMenu(Scanner scanner) {
+    // Display the settings menu
+    public static void settingsMenu(Scanner scanner) {
     try {
     while (true) {
         System.out.println("1. Hash Function");

@@ -40,10 +40,10 @@ public class Customer {
     }
 
     public void display_purchase(){
-        System.out.println("\n\nCustomer Name: " + getCustomerName());
-            
+        System.out.println("\n\nCustomer Name: " + getCustomerName() + "\tId: " + getCustomerId());
+
         for (int i = 0; i < purchases.size(); i++){
-            System.out.println(purchases.get(i).getDate() + " " + purchases.get(i).getProductName());
+            System.out.println(String.format("Date: %s \t Product: %s" , purchases.get(i).getDate(), purchases.get(i).getProductName()));
         }
     }
 }
