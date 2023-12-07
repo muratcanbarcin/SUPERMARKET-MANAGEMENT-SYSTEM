@@ -99,40 +99,46 @@ public class HashTableLP<Key, Value> implements DictionaryInterface<Key, Value> 
     }
 
     // Method to insert a key-value pair into the hash table
+    // Method to insert a key-value pair into the hash table
     public void put(Key key, Value value) {
-        if ((key == null) || (value == null))
-            throw new IllegalArgumentException("Cannot add null to a dictionary.");
-        else {
-            Customer oldValue;
-            int index;
-            // Determine the hashing strategy and get the hash index
-            if (SSForPAF.equalsIgnoreCase("1")) {
-                index = getHashIndexSSF(key);
-                index = probe(index, key, value);
-            } else {
-                index = getHashIndexPAF(key);
-                index = probe(index, key, value);
+        try {
+            if ((key == null) || (value == null))
+                throw new IllegalArgumentException("Cannot add null to a dictionary.");
+            else {
+                Customer oldValue;
+                int index;
+                // Determine the hashing strategy and get the hash index
+                if (SSForPAF.equalsIgnoreCase("1")) {
+                    index = getHashIndexSSF(key);
+                    index = probe(index, key, value);
+                } else {
+                    index = getHashIndexPAF(key);
+                    index = probe(index, key, value);
+                }
+
+                assert (index >= 0) && (index < hashtable.length);
+
+                // If the entry is empty or marked as removed, add a new entry
+                if ((hashtable[index] == null) || hashtable[index].isRemoved()) {
+                    hashtable[index] = new HashEntry<>(key, value);
+                    numberOfEntries++;
+                    oldValue = null;
+                } else {
+                    // If the entry exists, update the value and handle purchases
+                    oldValue = (Customer) hashtable[index].getValue();
+                    if (oldValue.getPurchases().size() > 0)
+                        oldValue.addPurchase(((Customer) value).getPurchases().get(0).getDate(),
+                                ((Customer) value).getPurchases().get(0).getProductName());
+                    hashtable[index].setValue((Value) oldValue);
+                }
+
+                // Check if the hashtable is too full and needs to be resized
+                if (isHashTableTooFull())
+                    resize(hashtable.length);
             }
-
-            assert (index >= 0) && (index < hashtable.length);
-
-            // If the entry is empty or marked as removed, add a new entry
-            if ((hashtable[index] == null) || hashtable[index].isRemoved()) {
-                hashtable[index] = new HashEntry<>(key, value);
-                numberOfEntries++;
-                oldValue = null;
-            } else {
-                // If the entry exists, update the value and handle purchases
-                oldValue = (Customer) hashtable[index].getValue();
-                if (oldValue.getPurchases().size() > 0)
-                    oldValue.addPurchase(((Customer) value).getPurchases().get(0).getDate(),
-                            ((Customer) value).getPurchases().get(0).getProductName());
-                hashtable[index].setValue((Value) oldValue);
-            }
-
-            // Check if the hashtable is too full and needs to be resized
-            if (isHashTableTooFull())
-                resize(hashtable.length);
+        } catch (Exception e) {
+            // Handle the exception, you can log it or take appropriate action
+            e.printStackTrace();
         }
     }
 
@@ -228,5 +234,9 @@ public class HashTableLP<Key, Value> implements DictionaryInterface<Key, Value> 
     // Method to get the collision count
     public long get_collisioncount() {
         return COLLISION_COUNT;
+    }
+
+    public String getType(){
+        return "LP";
     }
 }

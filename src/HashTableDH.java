@@ -16,12 +16,22 @@ public class HashTableDH<Key, Value> implements DictionaryInterface<Key, Value> 
 
     // Constructor
     public HashTableDH(int initial_capacity, String SSFForPAF, double MAX_LOAD_FACTOR) {
-        numberOfEntries = 0;
-        this.MAX_LOAD_FACTOR = MAX_LOAD_FACTOR;
-        HashEntry<Key, Value>[] temp = (HashEntry<Key, Value>[]) new HashEntry[findNextPrime(initial_capacity)];
-        hashtable = temp;
-        this.SSForPAF = SSFForPAF;
-        COLLISION_COUNT = 0;
+        try {
+            numberOfEntries = 0;
+            this.MAX_LOAD_FACTOR = MAX_LOAD_FACTOR;
+            HashEntry<Key, Value>[] temp = (HashEntry<Key, Value>[]) new HashEntry[findNextPrime(initial_capacity)];
+            hashtable = temp;
+            this.SSForPAF = SSFForPAF;
+            COLLISION_COUNT = 0;
+        } catch (NegativeArraySizeException e) {
+            // Handle negative array size exception
+            System.err.println("Error: Initial capacity cannot be negative.");
+            e.printStackTrace(); // You can choose to print or log the exception
+        } catch (Exception e) {
+            // Handle other exceptions
+            System.err.println("An unexpected error occurred during initialization.");
+            e.printStackTrace(); // You can choose to print or log the exception
+        }
     }
 
     // Hash function using a simple summation
@@ -129,33 +139,41 @@ public class HashTableDH<Key, Value> implements DictionaryInterface<Key, Value> 
 
     // Method to insert a key-value pair into the hash table
     public void put(Key key, Value value) {
-        if ((key == null) || (value == null))
-            throw new IllegalArgumentException("Cannot add null to a dictionary.");
-        else {
-            Customer oldValue;
-            int index;
+        try {
+            if ((key == null) || (value == null))
+                throw new IllegalArgumentException("Cannot add null to a dictionary.");
+            else {
+                Customer oldValue;
+                int index;
 
-            if (SSForPAF.equalsIgnoreCase("1")) {
-                index = getHashIndexSSF(key);
-                index = probe(index, key);
-            } else {
-                index = getHashIndexPAF(key);
-                index = probe(index, key);
+                if (SSForPAF.equalsIgnoreCase("1")) {
+                    index = getHashIndexSSF(key);
+                    index = probe(index, key);
+                } else {
+                    index = getHashIndexPAF(key);
+                    index = probe(index, key);
+                }
+
+                assert (index >= 0) && (index < hashtable.length);
+
+                if ((hashtable[index] == null) || hashtable[index].isRemoved()) {
+                    hashtable[index] = new HashEntry<>(key, value);
+                    numberOfEntries++;
+                    oldValue = null;
+                } else {
+                    oldValue = (Customer) hashtable[index].getValue();
+                    oldValue.addPurchase(((Customer) value).getPurchases().get(0).getDate(),
+                            ((Customer) value).getPurchases().get(0).getProductName());
+                    hashtable[index].setValue((Value) oldValue);
+                }
+
+                if (isHashTableTooFull())
+                    resize(hashtable.length);
             }
-
-            assert (index >= 0) && (index < hashtable.length);
-
-            if ((hashtable[index] == null) || hashtable[index].isRemoved()) {
-                hashtable[index] = new HashEntry<>(key, value);
-                numberOfEntries++;
-                oldValue = null;
-            } else {
-                oldValue = (Customer) hashtable[index].getValue();
-                oldValue.addPurchase(((Customer) value).getPurchases().get(0).getDate(), ((Customer) value).getPurchases().get(0).getProductName());
-                hashtable[index].setValue((Value) oldValue);
-            }
-
-            if (isHashTableTooFull()) resize(hashtable.length);
+        } catch (Exception e) {
+            // Handle other exceptions
+            System.err.println("An unexpected error occurred during put operation.");
+            e.printStackTrace(); // You can choose to print or log the exception
         }
     }
 
@@ -219,5 +237,8 @@ public class HashTableDH<Key, Value> implements DictionaryInterface<Key, Value> 
     // Getter method for the collision count
     public long get_collisioncount() {
         return COLLISION_COUNT;
+    }
+    public String getType(){
+        return "DH";
     }
 }
